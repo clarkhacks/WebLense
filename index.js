@@ -22,10 +22,10 @@ app.get("/", function (req, res) {
   res.send("Alive");
 });
 
-app.get("/lense/:height/:width", function (req, res) {
+app.get("/lense/:size", function (req, res) {
   var webLenseOptions = {
-    height: parseInt(req.params.height),
-    width: parseInt(req.params.width),
+    height: parseInt(req.params.size.split("x")[0]),
+    width: parseInt(req.params.size.split("x")[1]),
     url: req.query.url,
     latest: req.query.latest,
   };
@@ -61,6 +61,7 @@ app.get("/lense/:height/:width", function (req, res) {
         defaultViewport: {
           width: webLenseOptions.width,
           height: webLenseOptions.height,
+          deviceScaleFactor: 2,
         },
       })
       .then(async (browser) => {
