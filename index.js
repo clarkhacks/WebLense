@@ -11,7 +11,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-const PORT = process.env.PORT || 3000;
+const PORT = 5040;
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
@@ -56,6 +56,7 @@ app.get("/lense/:height/:width", function (req, res) {
   } else {
     puppeteer
       .launch({
+        headless: true,
         args: ['--no-sandbox'],
         defaultViewport: {
           width: webLenseOptions.width,
@@ -101,5 +102,5 @@ app.get("/lense/:height/:width", function (req, res) {
 });
 
 app.listen(PORT, function () {
-  console.log("Listening on port 3000");
+  console.log("Listening on port " + PORT);
 });
