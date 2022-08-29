@@ -28,6 +28,8 @@ app.get("/lense/:size", function (req, res) {
     width: parseInt(req.params.size.split("x")[1]),
     url: req.query.url,
     latest: req.query.latest,
+    type: req.query.type ? req.query.type : "jpeg",
+    fullPage: req.query.full ? req.query.full : false,
   };
   if (
     fs.existsSync(
@@ -51,7 +53,7 @@ app.get("/lense/:size", function (req, res) {
         webLenseOptions.height +
         "-" +
         webLenseOptions.width +
-        ".png"
+        "." + webLenseOptions.type
     );
   } else {
     puppeteer
@@ -76,14 +78,15 @@ app.get("/lense/:size", function (req, res) {
             webLenseOptions.height +
             "-" +
             webLenseOptions.width +
-            ".png",
+            "." + webLenseOptions.type,
+          fullPage: webLenseOptions.fullPage,
         });
         // Always close the browser after scraping
         await browser.close();
       })
       .finally(() => {
         // Send the image to the client
-        res.setHeader("Content-Type", "image/png");
+        res.setHeader("Content-Type", "image/" + webLenseOptions.type);
         res.sendFile(
           __dirname +
             "/images/" +
@@ -92,7 +95,7 @@ app.get("/lense/:size", function (req, res) {
             webLenseOptions.height +
             "-" +
             webLenseOptions.width +
-            ".png"
+            "." + webLenseOptions.type
         );
       })
       .catch((err) => {
