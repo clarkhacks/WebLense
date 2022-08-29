@@ -1,7 +1,7 @@
 // Require modules
-var express = require("express"); // Express web server framework
-var cors = require("cors"); // Cross-Origin Resource Sharing
-var app = express(); // Create an instance of the express module
+const express = require("express"); // Express web server framework
+const cors = require("cors"); // Cross-Origin Resource Sharing
+const app = express(); // Create an instance of the express module
 const fs = require("fs"); // file system
 const puppeteer = require("puppeteer"); // for scraping
 const rateLimit = require("express-rate-limit"); // for rate limiting
@@ -11,6 +11,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+const PORT = process.env.PORT || 3000;
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
@@ -100,6 +101,6 @@ app.get("/lense/:height/:width", function (req, res) {
   }
 });
 
-app.listen(3000, function () {
+app.listen(PORT, function () {
   console.log("Listening on port 3000");
 });
