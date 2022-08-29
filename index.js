@@ -35,31 +35,35 @@ app.get("/lense/:size", function (req, res) {
     fs.existsSync(
       __dirname +
         "/images/" +
+        webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
         webLenseOptions.height +
         "-" +
         webLenseOptions.width +
-        ".png"
+        "." +
+        webLenseOptions.type
     ) &&
     webLenseOptions.latest != "true"
   ) {
-    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Content-Type", "image/" + webLenseOptions.type);
     res.sendFile(
       __dirname +
         "/images/" +
+        webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
         webLenseOptions.height +
         "-" +
         webLenseOptions.width +
-        "." + webLenseOptions.type
+        "." +
+        webLenseOptions.type
     );
   } else {
     puppeteer
       .launch({
         headless: true,
-        args: ['--no-sandbox'],
+        args: ["--no-sandbox"],
         defaultViewport: {
           width: webLenseOptions.width,
           height: webLenseOptions.height,
@@ -73,12 +77,14 @@ app.get("/lense/:size", function (req, res) {
           path:
             __dirname +
             "/images/" +
+            webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
             webLenseOptions.height +
             "-" +
             webLenseOptions.width +
-            "." + webLenseOptions.type,
+            "." +
+            webLenseOptions.type,
           fullPage: webLenseOptions.fullPage,
         });
         // Always close the browser after scraping
@@ -90,12 +96,14 @@ app.get("/lense/:size", function (req, res) {
         res.sendFile(
           __dirname +
             "/images/" +
+            webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
             webLenseOptions.height +
             "-" +
             webLenseOptions.width +
-            "." + webLenseOptions.type
+            "." +
+            webLenseOptions.type
         );
       })
       .catch((err) => {
