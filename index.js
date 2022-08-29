@@ -18,8 +18,8 @@ app.use(limiter);
 app.use(express.static("./images")); // Serve static files from the images directory
 app.use(cors()); // Enable CORS for all requests
 
-app.get("/alive", function (req, res) {
-  res.send(200);
+app.get("/", function (req, res) {
+  res.send("Alive");
 });
 
 app.get("/lense/:height/:width", function (req, res) {
@@ -56,6 +56,7 @@ app.get("/lense/:height/:width", function (req, res) {
   } else {
     puppeteer
       .launch({
+        args: ['--no-sandbox'],
         defaultViewport: {
           width: webLenseOptions.width,
           height: webLenseOptions.height,
@@ -94,9 +95,7 @@ app.get("/lense/:height/:width", function (req, res) {
       })
       .catch((err) => {
         console.log(err);
-        // send formatted json error to client
-        res.setHeader("Content-Type", "application/json");
-        res.status(500).send(JSON.stringify(err));
+        res.send(err);
       });
   }
 });
