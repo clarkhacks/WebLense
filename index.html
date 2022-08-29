@@ -57,7 +57,7 @@
 						</div>
 					</div>
 					<hr id="divider01">
-					<form enctype="multipart/form-data" id="demo" onsubmit="">
+					<form id="demo" onsubmit="event.preventDefault(); grabScreen();">
 						<div class="inner">
 							<div class="field">
 								<input type="text" name="url" id="demo-url" placeholder="Url" maxlength="256" required />
@@ -75,15 +75,14 @@
 		</div>
 		<script src="/main.js"></script>
 		<script>
-			var form = document.getElementById('demo');
-			form.addEventListener("submit", function(){
+			function grabScreen() {
 				var url = document.getElementById("demo-url").value;
 				var image = document.getElementById("demo-image");
 				image.src = "https://weblense.wkmn.app/lense/800x600/?url=" + url;
 				var loading = document.querySelector(".waiting");
 				loading.disabled = false;
 				loading.classList.remove("waiting");
-			}, true)
+			}
 		</script>
 	</body>
 </html>
