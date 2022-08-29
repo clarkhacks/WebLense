@@ -18,12 +18,23 @@ app.use(limiter);
 app.use(express.static("./images")); // Serve static files from the images directory
 app.use(express.static("./assets")); // Serve static files from the public directory
 app.use(cors()); // Enable CORS for all requests
-
+// landing page
 app.get("/", function (req, res) {
   res.sendFile(__dirname + "/index.html");
 });
-
+// api endpoint
 app.get("/lense/:size", function (req, res) {
+  if (!req.query.url) {
+    //send json
+    // get ip address
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    res.header("Content-Type", "application/json");
+    res.json({
+      error: "url is required",
+      fix: "add url to query string = ?url=www.google.com",
+      request_from: ip,
+    });
+  }
   var webLenseOptions = {
     height: parseInt(req.params.size.split("x")[0]),
     width: parseInt(req.params.size.split("x")[1]),
@@ -32,6 +43,7 @@ app.get("/lense/:size", function (req, res) {
     type: req.query.type ? req.query.type : "jpeg",
     fullPage: req.query.full ? req.query.full : false,
   };
+  // check if the image already exists
   if (
     fs.existsSync(
       __dirname +
@@ -45,8 +57,10 @@ app.get("/lense/:size", function (req, res) {
         "." +
         webLenseOptions.type
     ) &&
-    webLenseOptions.latest != "true"
+    webLenseOptions.latest != "true" &&
+    req.query.url.length > 0
   ) {
+    // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
     res.sendFile(
       __dirname +
@@ -61,6 +75,7 @@ app.get("/lense/:size", function (req, res) {
         webLenseOptions.type
     );
   } else {
+    // if the image doesn't exist, create it
     puppeteer
       .launch({
         headless: true,
@@ -109,9 +124,20 @@ app.get("/lense/:size", function (req, res) {
       })
       .catch((err) => {
         console.log(err);
-        res.send(err);
+        var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+        res.header("Content-Type", "application/json");
+        res.json({
+          error: err,
+          fix: "StackOverflow",
+          request_from: ip,
+        });
       });
   }
+});
+
+// 404 handler
+app.get("*", function (req, res) {
+  res.redirect("/");
 });
 
 app.listen(PORT, function () {
