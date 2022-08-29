@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>Web Lense API</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="description" content="An api designed to capture screenshots of website." />
+		<meta property="og:site_name" content="Web Lense API" />
+		<meta property="og:title" content="Web Lense API" />
+		<meta property="og:type" content="website" />
+		<meta property="og:description" content="An api designed to capture screenshots of website." />
+		<link href="https://fonts.googleapis.com/css?display=swap&family=Lato:700,700italic,400,400italic,900,900italic" rel="stylesheet" type="text/css" />
+		<link rel="icon" type="image/png" href="assets/images/favicon.png" />
+		<link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
+		<link rel="stylesheet" href="assets/main.css" />
+		<noscript><link rel="stylesheet" href="assets/noscript.css" /></noscript>
+	</head>
+	<body class="is-loading">
+		<div id="wrapper">
+			<div id="main">
+				<div class="inner">
+					<h1 id="text02">WebLense API</h1>
+					<p id="text01">Capture screenshots of websites. That&#039;s it.</p>
+					<p id="text03"><strong>Endpoint:</strong> /lense/<code>HEIGHT</code>x<code>WIDTH</code>/</p>
+					<div id="table01" class="table-wrapper">
+						<div class="table-inner">
+							<table>
+								<thead>
+									<tr>
+										<th>Query</th>
+										<th>Description</th>
+										<th>Optional</th>
+										<th>Default</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>url</td>
+										<td><strong>String</strong> The url you want to capture.</td>
+										<td>❌</td>
+										<td>NONE</td>
+									</tr>
+									<tr>
+										<td>full</td>
+										<td><strong>Boolean</strong> Capture full page.</td>
+										<td>✅</td>
+										<td>False</td>
+									</tr>
+									<tr>
+										<td>type</td>
+										<td><strong>String</strong> Image type, <code>jpeg</code> or <code>png</code></td>
+										<td>✅</td>
+										<td>png</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<hr id="divider01">
+					<form enctype="multipart/form-data" id="demo" method="post" action="#">
+						<div class="inner">
+							<div class="field">
+								<input type="text" name="url" id="demo-url" placeholder="Url" maxlength="256" required />
+							</div>
+							<div class="actions">
+								<button type="submit">Grab Screenshot!</button>
+							</div>
+						</div>
+					</form>
+					<div id="image" class="image">
+						<span class="frame"><img src="assets/images/image.jpg" alt="" /></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="assets/main.js"></script>
+	</body>
+</html>

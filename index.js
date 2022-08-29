@@ -16,10 +16,11 @@ const PORT = 5040;
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
 app.use(express.static("./images")); // Serve static files from the images directory
+app.use(express.static("./assets")); // Serve static files from the public directory
 app.use(cors()); // Enable CORS for all requests
 
 app.get("/", function (req, res) {
-  res.send("Alive");
+  res.sendFile(__dirname + "/index.html");
 });
 
 app.get("/lense/:size", function (req, res) {
