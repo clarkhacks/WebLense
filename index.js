@@ -89,7 +89,7 @@ app.get("/lense/:size", function (req, res) {
       })
       .then(async (browser) => {
         const page = await browser.newPage();
-        await page.goto(webLenseOptions.url, { waitUntil: "networkidle0" });
+        await page.goto(decodeURI(webLenseOptions.url), { waitUntil: "networkidle0" });
         await page.screenshot({
           path:
             __dirname +
