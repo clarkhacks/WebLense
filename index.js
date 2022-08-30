@@ -35,10 +35,11 @@ app.get("/lense/:size", function (req, res) {
       request_from: ip,
     });
   }
+
   var webLenseOptions = {
     height: parseInt(req.params.size.split("x")[0]),
     width: parseInt(req.params.size.split("x")[1]),
-    url: req.query.url,
+    url: encodeURI(req.query.url),
     latest: req.query.latest,
     type: req.query.type ? req.query.type : "jpeg",
     fullPage: req.query.full ? req.query.full : false,
