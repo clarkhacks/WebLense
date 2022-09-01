@@ -6,7 +6,7 @@ const fs = require("fs"); // file system
 const puppeteer = require("puppeteer"); // for scraping
 const rateLimit = require("express-rate-limit"); // for rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 1 * 60 * 1000, // 1 minute
   max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
