@@ -40,7 +40,6 @@ app.get("/lense/:size", function (req, res) {
     height: parseInt(req.params.size.split("x")[0]),
     width: parseInt(req.params.size.split("x")[1]),
     url: encodeURI(req.query.url),
-    latest: req.query.latest,
     type: req.query.type ? req.query.type : "jpeg",
     fullPage: req.query.full ? req.query.full : false,
   };
@@ -57,7 +56,6 @@ app.get("/lense/:size", function (req, res) {
         "." +
         webLenseOptions.type
     ) &&
-    webLenseOptions.latest != "true" &&
     req.query.url.length > 0
   ) {
     // if the image already exists, send it
@@ -134,6 +132,85 @@ app.get("/lense/:size", function (req, res) {
   }
 });
 
+//get latest image
+app.get("/lense/latest/:size", function (req, res) {
+  if (!req.query.url) {
+    //send json
+    // get ip address
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    res.header("Content-Type", "application/json");
+    res.json({
+      error: "url is required",
+      fix: "add url to query string = ?url=www.google.com",
+      request_from: ip,
+    });
+  }
+  var webLenseOptions = {
+    height: parseInt(req.params.size.split("x")[0]),
+    width: parseInt(req.params.size.split("x")[1]),
+    url: encodeURI(req.query.url),
+    type: req.query.type ? req.query.type : "jpeg",
+    fullPage: req.query.full ? req.query.full : false,
+  };
+    puppeteer
+      .launch({
+        headless: true,
+        args: ["--no-sandbox"],
+        defaultViewport: {
+          width: webLenseOptions.width,
+          height: webLenseOptions.height,
+          deviceScaleFactor: 2,
+        },
+      })
+      .then(async (browser) => {
+        const page = await browser.newPage();
+        await page.goto(decodeURI(webLenseOptions.url), {
+          waitUntil: "networkidle0",
+        });
+        await page.screenshot({
+          path:
+            photoDir +
+            webLenseOptions.fullPage +
+            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+            "-" +
+            webLenseOptions.height +
+            "-" +
+            webLenseOptions.width +
+            "." +
+            webLenseOptions.type,
+          fullPage: webLenseOptions.fullPage,
+        });
+        // Always close the browser after scraping
+        await browser.close();
+      })
+      .finally(() => {
+        // Send the image to the client
+        res.setHeader("Content-Type", "image/" + webLenseOptions.type);
+        res.redirect(
+          "https://cdn.weblense.co/" +
+            webLenseOptions.fullPage +
+            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+            "-" +
+            webLenseOptions.height +
+            "-" +
+            webLenseOptions.width +
+            "." +
+            webLenseOptions.type
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+        res.header("Content-Type", "application/json");
+        res.json({
+          error: err,
+          fix: "StackOverflow",
+          request_from: ip,
+        });
+      });
+});
+
+// quick access
 app.get("/s", function (req, res) {
   if (!req.query.url) {
     //send json
@@ -151,7 +228,6 @@ app.get("/s", function (req, res) {
     height: 600,
     width: 800,
     url: encodeURI(req.query.url),
-    latest: req.query.latest,
     type: req.query.type ? req.query.type : "jpeg",
     fullPage: req.query.full ? req.query.full : false,
   };
@@ -169,121 +245,6 @@ app.get("/s", function (req, res) {
         "." +
         webLenseOptions.type
     ) &&
-    webLenseOptions.latest != "true" &&
-    req.query.url.length > 0
-  ) {
-    // if the image already exists, send it
-    res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-    res.redirect(
-      "https://cdn.weblense.co/" +
-        webLenseOptions.fullPage +
-        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-        "-" +
-        webLenseOptions.height +
-        "-" +
-        webLenseOptions.width +
-        "." +
-        webLenseOptions.type
-    );
-  } else {
-    // if the image doesn't exist, create it
-    puppeteer
-      .launch({
-        headless: true,
-        args: ["--no-sandbox"],
-        defaultViewport: {
-          width: webLenseOptions.width,
-          height: webLenseOptions.height,
-          deviceScaleFactor: 2,
-        },
-      })
-      .then(async (browser) => {
-        const page = await browser.newPage();
-        await page.goto(decodeURI(webLenseOptions.url), {
-          waitUntil: "networkidle0",
-        });
-        await page.screenshot({
-          path:
-            photoDir +
-            webLenseOptions.fullPage +
-            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-            "-" +
-            webLenseOptions.height +
-            "-" +
-            webLenseOptions.width +
-            "." +
-            webLenseOptions.type,
-          fullPage: webLenseOptions.fullPage,
-        });
-        // Always close the browser after scraping
-        await browser.close();
-      })
-      .finally(() => {
-        // Send the image to the client
-        res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-        res.redirect(
-          "https://cdn.weblense.co/" +
-            webLenseOptions.fullPage +
-            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-            "-" +
-            webLenseOptions.height +
-            "-" +
-            webLenseOptions.width +
-            "." +
-            webLenseOptions.type
-        );
-      })
-      .catch((err) => {
-        console.log(err);
-        var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-        res.header("Content-Type", "application/json");
-        res.json({
-          error: err,
-          fix: "StackOverflow",
-          request_from: ip,
-        });
-      });
-  }
-});
-
-//dev handler
-
-app.get("/dev", function (req, res) {
-  if (!req.query.url) {
-    //send json
-    // get ip address
-    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-    res.header("Content-Type", "application/json");
-    res.json({
-      error: "url is required",
-      fix: "add url to query string = ?url=www.google.com",
-      request_from: ip,
-    });
-  }
-
-  var webLenseOptions = {
-    height: 600,
-    width: 800,
-    url: encodeURI(req.query.url),
-    latest: req.query.latest,
-    type: req.query.type ? req.query.type : "jpeg",
-    fullPage: req.query.full ? req.query.full : false,
-  };
-  // check if the image already exists
-  if (
-    fs.existsSync(
-      __dirname +
-        "/images/" +
-        webLenseOptions.fullPage +
-        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-        "-" +
-        webLenseOptions.height +
-        "-" +
-        webLenseOptions.width +
-        "." +
-        webLenseOptions.type
-    ) &&
-    webLenseOptions.latest != "true" &&
     req.query.url.length > 0
   ) {
     // if the image already exists, send it
