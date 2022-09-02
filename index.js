@@ -61,8 +61,8 @@ app.get("/lense/:size", function (req, res) {
   ) {
     // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-    res.sendFile(
-      "/mnt/volume_nyc3_01/weblense/" +
+    res.redirect(
+      "https://cdn.weblense.co/" +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -108,8 +108,8 @@ app.get("/lense/:size", function (req, res) {
       .finally(() => {
         // Send the image to the client
         res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-        res.sendFile(
-          "/mnt/volume_nyc3_01/weblense/" +
+        res.redirect(
+          "https://cdn.weblense.co/" +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
