@@ -251,7 +251,7 @@ app.get("/s", function (req, res) {
     // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
     res.sendFile(
-      "https://cdn.weblense.co/" +
+      photoDir +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -265,19 +265,7 @@ app.get("/s", function (req, res) {
     // if the image doesn't exist, create it and send place holder.
     res.setHeader("Content-Type", "image/jpeg");
     //set refresh header
-    res.setHeader(
-      "Refresh",
-      "5; url=" +
-        "https://cdn.weblense.co/" +
-        webLenseOptions.fullPage +
-        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-        "-" +
-        webLenseOptions.height +
-        "-" +
-        webLenseOptions.width +
-        "." +
-        webLenseOptions.type
-    );
+    res.setHeader("Refresh", "5");
     res.sendFile(__dirname + "/assets/wait.jpg");
     puppeteer
       .launch({
