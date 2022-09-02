@@ -12,6 +12,7 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 const PORT = 5040;
+const photoDir = "/mnt/volume_nyc3_01/weblense/";
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
@@ -46,7 +47,7 @@ app.get("/lense/:size", function (req, res) {
   // check if the image already exists
   if (
     fs.existsSync(
-      "/mnt/volume_nyc3_01/weblense/" +
+      photoDir +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -91,7 +92,7 @@ app.get("/lense/:size", function (req, res) {
         });
         await page.screenshot({
           path:
-            "/mnt/volume_nyc3_01/weblense/" +
+            photoDir +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
@@ -173,9 +174,8 @@ app.get("/s", function (req, res) {
   ) {
     // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-    res.sendFile(
-      __dirname +
-        "/images/" +
+    res.redirect(
+      "https://cdn.weblense.co/" +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -204,8 +204,7 @@ app.get("/s", function (req, res) {
         });
         await page.screenshot({
           path:
-            __dirname +
-            "/images/" +
+            photoDir +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
@@ -222,9 +221,8 @@ app.get("/s", function (req, res) {
       .finally(() => {
         // Send the image to the client
         res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-        res.sendFile(
-          __dirname +
-            "/images/" +
+        res.redirect(
+          "https://cdn.weblense.co/" +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
@@ -247,6 +245,122 @@ app.get("/s", function (req, res) {
       });
   }
 });
+
+//dev handler
+
+app.get("/dev", function (req, res) {
+  if (!req.query.url) {
+    //send json
+    // get ip address
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    res.header("Content-Type", "application/json");
+    res.json({
+      error: "url is required",
+      fix: "add url to query string = ?url=www.google.com",
+      request_from: ip,
+    });
+  }
+
+  var webLenseOptions = {
+    height: 600,
+    width: 800,
+    url: encodeURI(req.query.url),
+    latest: req.query.latest,
+    type: req.query.type ? req.query.type : "jpeg",
+    fullPage: req.query.full ? req.query.full : false,
+  };
+  // check if the image already exists
+  if (
+    fs.existsSync(
+      __dirname +
+        "/images/" +
+        webLenseOptions.fullPage +
+        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+        "-" +
+        webLenseOptions.height +
+        "-" +
+        webLenseOptions.width +
+        "." +
+        webLenseOptions.type
+    ) &&
+    webLenseOptions.latest != "true" &&
+    req.query.url.length > 0
+  ) {
+    // if the image already exists, send it
+    res.setHeader("Content-Type", "image/" + webLenseOptions.type);
+    res.redirect(
+      "https://cdn.weblense.co/" +
+        webLenseOptions.fullPage +
+        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+        "-" +
+        webLenseOptions.height +
+        "-" +
+        webLenseOptions.width +
+        "." +
+        webLenseOptions.type
+    );
+  } else {
+    // if the image doesn't exist, create it and send place holder.
+    res.setHeader("Content-Type", "image/jpeg");
+    //set refresh header
+    res.setHeader(
+      "Refresh",
+      "5; url=" +
+        "https://cdn.weblense.co/" +
+        webLenseOptions.fullPage +
+        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+        "-" +
+        webLenseOptions.height +
+        "-" +
+        webLenseOptions.width +
+        "." +
+        webLenseOptions.type
+    );
+    res.sendFile(__dirname + "/assets/wait.jpg");
+    puppeteer
+      .launch({
+        headless: true,
+        args: ["--no-sandbox"],
+        defaultViewport: {
+          width: webLenseOptions.width,
+          height: webLenseOptions.height,
+          deviceScaleFactor: 2,
+        },
+      })
+      .then(async (browser) => {
+        const page = await browser.newPage();
+        await page.goto(decodeURI(webLenseOptions.url), {
+          waitUntil: "networkidle0",
+        });
+        await page.screenshot({
+          path:
+            photoDir +
+            webLenseOptions.fullPage +
+            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+            "-" +
+            webLenseOptions.height +
+            "-" +
+            webLenseOptions.width +
+            "." +
+            webLenseOptions.type,
+          fullPage: webLenseOptions.fullPage,
+        });
+        // Always close the browser after scraping
+        await browser.close();
+      })
+      .catch((err) => {
+        console.log(err);
+        var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+        res.header("Content-Type", "application/json");
+        res.json({
+          error: err,
+          fix: "StackOverflow",
+          request_from: ip,
+        });
+      });
+  }
+});
+
 // 404 handler
 app.get("*", function (req, res) {
   res.redirect("/");
