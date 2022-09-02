@@ -250,7 +250,7 @@ app.get("/s", function (req, res) {
   ) {
     // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-    res.redirect(
+    res.sendFile(
       "https://cdn.weblense.co/" +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
