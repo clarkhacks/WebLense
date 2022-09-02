@@ -15,7 +15,6 @@ const PORT = 5040;
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
-app.use(express.static("./images")); // Serve static files from the images directory
 app.use(express.static("./assets")); // Serve static files from the public directory
 app.use(cors()); // Enable CORS for all requests
 // landing page
@@ -47,8 +46,7 @@ app.get("/lense/:size", function (req, res) {
   // check if the image already exists
   if (
     fs.existsSync(
-      __dirname +
-        "/images/" +
+      "/mnt/volume_nyc3_01/weblense/" +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -64,8 +62,7 @@ app.get("/lense/:size", function (req, res) {
     // if the image already exists, send it
     res.setHeader("Content-Type", "image/" + webLenseOptions.type);
     res.sendFile(
-      __dirname +
-        "/images/" +
+      "/mnt/volume_nyc3_01/weblense/" +
         webLenseOptions.fullPage +
         webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
         "-" +
@@ -89,11 +86,12 @@ app.get("/lense/:size", function (req, res) {
       })
       .then(async (browser) => {
         const page = await browser.newPage();
-        await page.goto(decodeURI(webLenseOptions.url), { waitUntil: "networkidle0" });
+        await page.goto(decodeURI(webLenseOptions.url), {
+          waitUntil: "networkidle0",
+        });
         await page.screenshot({
           path:
-            __dirname +
-            "/images/" +
+            "/mnt/volume_nyc3_01/weblense/" +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
@@ -111,8 +109,7 @@ app.get("/lense/:size", function (req, res) {
         // Send the image to the client
         res.setHeader("Content-Type", "image/" + webLenseOptions.type);
         res.sendFile(
-          __dirname +
-            "/images/" +
+          "/mnt/volume_nyc3_01/weblense/" +
             webLenseOptions.fullPage +
             webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
             "-" +
@@ -202,7 +199,9 @@ app.get("/s", function (req, res) {
       })
       .then(async (browser) => {
         const page = await browser.newPage();
-        await page.goto(decodeURI(webLenseOptions.url), { waitUntil: "networkidle0" });
+        await page.goto(decodeURI(webLenseOptions.url), {
+          waitUntil: "networkidle0",
+        });
         await page.screenshot({
           path:
             __dirname +
