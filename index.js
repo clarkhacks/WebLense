@@ -72,7 +72,22 @@ app.get("/lense/:size", function (req, res) {
         webLenseOptions.type
     );
   } else {
-    // if the image doesn't exist, create it
+    // if the image doesn't exist, create it and send place holder.
+    res.setHeader("Content-Type", "image/jpeg");
+    //set refresh header
+    res.setHeader(
+      "Refresh",
+      "5; url=" +
+        "https://cdn.weblense.co/" +
+        webLenseOptions.fullPage +
+        webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+        "-" +
+        webLenseOptions.height +
+        "-" +
+        webLenseOptions.width +
+        "." +
+        webLenseOptions.type
+    );
     puppeteer
       .launch({
         headless: true,
@@ -103,21 +118,6 @@ app.get("/lense/:size", function (req, res) {
         });
         // Always close the browser after scraping
         await browser.close();
-      })
-      .finally(() => {
-        // Send the image to the client
-        res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-        res.redirect(
-          "https://cdn.weblense.co/" +
-            webLenseOptions.fullPage +
-            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-            "-" +
-            webLenseOptions.height +
-            "-" +
-            webLenseOptions.width +
-            "." +
-            webLenseOptions.type
-        );
       })
       .catch((err) => {
         console.log(err);
@@ -152,62 +152,62 @@ app.get("/lense/latest/:size", function (req, res) {
     type: req.query.type ? req.query.type : "jpeg",
     fullPage: req.query.full ? req.query.full : false,
   };
-    puppeteer
-      .launch({
-        headless: true,
-        args: ["--no-sandbox"],
-        defaultViewport: {
-          width: webLenseOptions.width,
-          height: webLenseOptions.height,
-          deviceScaleFactor: 2,
-        },
-      })
-      .then(async (browser) => {
-        const page = await browser.newPage();
-        await page.goto(decodeURI(webLenseOptions.url), {
-          waitUntil: "networkidle0",
-        });
-        await page.screenshot({
-          path:
-            photoDir +
-            webLenseOptions.fullPage +
-            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-            "-" +
-            webLenseOptions.height +
-            "-" +
-            webLenseOptions.width +
-            "." +
-            webLenseOptions.type,
-          fullPage: webLenseOptions.fullPage,
-        });
-        // Always close the browser after scraping
-        await browser.close();
-      })
-      .finally(() => {
-        // Send the image to the client
-        res.setHeader("Content-Type", "image/" + webLenseOptions.type);
-        res.redirect(
-          "https://cdn.weblense.co/" +
-            webLenseOptions.fullPage +
-            webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
-            "-" +
-            webLenseOptions.height +
-            "-" +
-            webLenseOptions.width +
-            "." +
-            webLenseOptions.type
-        );
-      })
-      .catch((err) => {
-        console.log(err);
-        var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-        res.header("Content-Type", "application/json");
-        res.json({
-          error: err,
-          fix: "StackOverflow",
-          request_from: ip,
-        });
+  puppeteer
+    .launch({
+      headless: true,
+      args: ["--no-sandbox"],
+      defaultViewport: {
+        width: webLenseOptions.width,
+        height: webLenseOptions.height,
+        deviceScaleFactor: 2,
+      },
+    })
+    .then(async (browser) => {
+      const page = await browser.newPage();
+      await page.goto(decodeURI(webLenseOptions.url), {
+        waitUntil: "networkidle0",
       });
+      await page.screenshot({
+        path:
+          photoDir +
+          webLenseOptions.fullPage +
+          webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+          "-" +
+          webLenseOptions.height +
+          "-" +
+          webLenseOptions.width +
+          "." +
+          webLenseOptions.type,
+        fullPage: webLenseOptions.fullPage,
+      });
+      // Always close the browser after scraping
+      await browser.close();
+    })
+    .finally(() => {
+      // Send the image to the client
+      res.setHeader("Content-Type", "image/" + webLenseOptions.type);
+      res.redirect(
+        "https://cdn.weblense.co/" +
+          webLenseOptions.fullPage +
+          webLenseOptions.url.replace(/[^A-Za-z0-9]/g, "-") +
+          "-" +
+          webLenseOptions.height +
+          "-" +
+          webLenseOptions.width +
+          "." +
+          webLenseOptions.type
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+      var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      res.header("Content-Type", "application/json");
+      res.json({
+        error: err,
+        fix: "StackOverflow",
+        request_from: ip,
+      });
+    });
 });
 
 // quick access
