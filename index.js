@@ -88,6 +88,7 @@ app.get("/lense/:size", function (req, res) {
         "." +
         webLenseOptions.type
     );
+    res.sendFile(__dirname + "/assets/wait.jpg");
     puppeteer
       .launch({
         headless: true,
