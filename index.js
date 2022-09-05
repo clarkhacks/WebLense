@@ -12,7 +12,10 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 const PORT = 5040;
-const photoDir = "/mnt/volume_nyc3_01/weblense/";
+const photoDir = __dirname + "/captures/";
+const browser = await puppeteer.launch({
+  executablePath: '/usr/bin/google-chrome',
+});
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
@@ -310,7 +313,7 @@ app.get("/s", function (req, res) {
   }
 });
 
-// ntoion access
+// notion access
 app.get("/n", function (req, res) {
   if (!req.query.url) {
     //send json
