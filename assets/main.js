@@ -425,12 +425,160 @@
 	
 				setTimeout(function() {
 					$body.className = $body.className.replace(/\bis-playing\b/, 'is-ready');
-				}, 3500);
+				}, 1000);
 			}, 100);
 		});
 	
 	// Load elements (if needed).
 		loadElements(document.body);
+	
+	// Scroll points.
+		(function() {
+	
+			// Override exposed scrollToTop.
+				window._scrollToTop = function() {
+	
+					// Scroll to top.
+						scrollToElement(null);
+	
+					// Scroll point active?
+						if (window.location.hash) {
+	
+							// Reset hash (via new state).
+								history.pushState(null, null, '.');
+	
+						}
+	
+				};
+	
+			// Initialize.
+	
+				// Set scroll restoration to manual.
+					if ('scrollRestoration' in history)
+						history.scrollRestoration = 'manual';
+	
+				// Load event.
+					on('load', function() {
+	
+						var initialScrollPoint, h;
+	
+						// Determine target.
+							h = thisHash();
+	
+							// Contains invalid characters? Might be a third-party hashbang, so ignore it.
+								if (h
+								&&	!h.match(/^[a-zA-Z0-9\-]+$/))
+									h = null;
+	
+							// Scroll point.
+								initialScrollPoint = $('[data-scroll-id="' + h + '"]');
+	
+						// Scroll to scroll point (if applicable).
+							if (initialScrollPoint)
+								scrollToElement(initialScrollPoint, 'instant');
+	
+					});
+	
+			// Hashchange event.
+				on('hashchange', function(event) {
+	
+					var scrollPoint, h, pos;
+	
+					// Determine target.
+						h = thisHash();
+	
+						// Contains invalid characters? Might be a third-party hashbang, so ignore it.
+							if (h
+							&&	!h.match(/^[a-zA-Z0-9\-]+$/))
+								return false;
+	
+						// Scroll point.
+							scrollPoint = $('[data-scroll-id="' + h + '"]');
+	
+					// Scroll to scroll point (if applicable).
+						if (scrollPoint)
+							scrollToElement(scrollPoint);
+	
+					// Otherwise, just scroll to top.
+						else
+							scrollToElement(null);
+	
+					// Bail.
+						return false;
+	
+				});
+	
+				// Hack: Allow hashchange to trigger on click even if the target's href matches the current hash.
+					on('click', function(event) {
+	
+						var t = event.target,
+							tagName = t.tagName.toUpperCase(),
+							scrollPoint;
+	
+						// Find real target.
+							switch (tagName) {
+	
+								case 'IMG':
+								case 'SVG':
+								case 'USE':
+								case 'U':
+								case 'STRONG':
+								case 'EM':
+								case 'CODE':
+								case 'S':
+								case 'MARK':
+								case 'SPAN':
+	
+									// Find ancestor anchor tag.
+										while ( !!(t = t.parentElement) )
+											if (t.tagName == 'A')
+												break;
+	
+									// Not found? Bail.
+										if (!t)
+											return;
+	
+									break;
+	
+								default:
+									break;
+	
+							}
+	
+						// Target is an anchor *and* its href is a hash?
+							if (t.tagName == 'A'
+							&&	t.getAttribute('href').substr(0, 1) == '#') {
+	
+								// Hash matches an invisible scroll point?
+									if (!!(scrollPoint = $('[data-scroll-id="' + t.hash.substr(1) + '"][data-scroll-invisible="1"]'))) {
+	
+										// Prevent default.
+											event.preventDefault();
+	
+										// Scroll to element.
+											scrollToElement(scrollPoint);
+	
+									}
+	
+								// Hash matches the current hash?
+									else if (t.hash == window.location.hash) {
+	
+										// Prevent default.
+											event.preventDefault();
+	
+										// Replace state with '#'.
+											history.replaceState(undefined, undefined, '#');
+	
+										// Replace location with target hash.
+											location.replace(t.hash);
+	
+									}
+	
+							}
+	
+					});
+	
+		})();
 	
 	// Browser hacks.
 	
@@ -559,5 +707,787 @@
 					$body.classList.add('is-touch');
 	
 			}
+	
+	// Reorder.
+		(function() {
+	
+			var	breakpoints = {
+					small: '(max-width: 736px)',
+					medium: '(max-width: 980px)',
+				},
+				elements = $$('[data-reorder]');
+	
+			// Initialize elements.
+				elements.forEach(function(e) {
+	
+					var	desktop = [],
+						mobile = [],
+						state = false,
+						query,
+						a, x, ce, f;
+	
+					// Determine media query via "reorder-breakpoint".
+	
+						// Attribute provided *and* it's a valid breakpoint? Use it.
+							if ('reorderBreakpoint' in e.dataset
+							&&	e.dataset.reorderBreakpoint in breakpoints)
+								query = breakpoints[e.dataset.reorderBreakpoint];
+	
+						// Otherwise, default to "small".
+							else
+								query = breakpoints.small;
+	
+					// Get desktop order.
+						for (ce of e.childNodes) {
+	
+							// Not a node? Skip.
+								if (ce.nodeType != 1)
+									continue;
+	
+							// Add to desktop order.
+								desktop.push(ce);
+	
+						}
+	
+					// Determine mobile order via "reorder".
+						a = e.dataset.reorder.split(',');
+	
+						for (x of a)
+							mobile.push(desktop[parseInt(x)]);
+	
+					// Create handler.
+						f = function() {
+	
+							var order = null,
+								ce;
+	
+							// Matches media query?
+								if (window.matchMedia(query).matches) {
+	
+									// Hasn't been applied yet?
+										if (!state) {
+	
+											// Mark as applied.
+												state = true;
+	
+											// Apply mobile.
+												for (ce of mobile)
+													e.appendChild(ce);
+	
+										}
+	
+								}
+	
+							// Otherwise ...
+								else {
+	
+									// Previously applied?
+										if (state) {
+	
+											// Unmark as applied.
+												state = false;
+	
+											// Apply desktop.
+												for (ce of desktop)
+													e.appendChild(ce);
+	
+										}
+	
+								}
+	
+						};
+	
+					// Add event listeners.
+						on('resize', f);
+						on('orientationchange', f);
+						on('load', f);
+						on('fullscreenchange', f);
+	
+				});
+	
+		})();
+	
+	// Scroll events.
+		var scrollEvents = {
+	
+			/**
+			 * Items.
+			 * @var {array}
+			 */
+			items: [],
+	
+			/**
+			 * Adds an event.
+			 * @param {object} o Options.
+			 */
+			add: function(o) {
+	
+				this.items.push({
+					element: o.element,
+					triggerElement: (('triggerElement' in o && o.triggerElement) ? o.triggerElement : o.element),
+					enter: ('enter' in o ? o.enter : null),
+					leave: ('leave' in o ? o.leave : null),
+					mode: ('mode' in o ? o.mode : 1),
+					offset: ('offset' in o ? o.offset : 0),
+					initialState: ('initialState' in o ? o.initialState : null),
+					state: false,
+				});
+	
+			},
+	
+			/**
+			 * Handler.
+			 */
+			handler: function() {
+	
+				var	height, top, bottom, scrollPad;
+	
+				// Determine values.
+					if (client.os == 'ios') {
+	
+						height = document.documentElement.clientHeight;
+						top = document.body.scrollTop + window.scrollY;
+						bottom = top + height;
+						scrollPad = 125;
+	
+					}
+					else {
+	
+						height = document.documentElement.clientHeight;
+						top = document.documentElement.scrollTop;
+						bottom = top + height;
+						scrollPad = 0;
+	
+					}
+	
+				// Step through items.
+					scrollEvents.items.forEach(function(item) {
+	
+						var bcr, elementTop, elementBottom, state, a, b;
+	
+						// No enter/leave handlers? Bail.
+							if (!item.enter
+							&&	!item.leave)
+								return true;
+	
+						// No trigger element, or not visible? Bail.
+							if (!item.triggerElement
+							||	item.triggerElement.offsetParent === null)
+								return true;
+	
+						// Get element position.
+							bcr = item.triggerElement.getBoundingClientRect();
+							elementTop = top + Math.floor(bcr.top);
+							elementBottom = elementTop + bcr.height;
+	
+						// Determine state.
+	
+							// Initial state exists?
+								if (item.initialState !== null) {
+	
+									// Use it for this check.
+										state = item.initialState;
+	
+									// Clear it.
+										item.initialState = null;
+	
+								}
+	
+							// Otherwise, determine state from mode/position.
+								else {
+	
+									switch (item.mode) {
+	
+										// Element falls within viewport.
+											case 1:
+											default:
+	
+												// State.
+													state = (bottom > (elementTop - item.offset) && top < (elementBottom + item.offset));
+	
+												break;
+	
+										// Viewport midpoint falls within element.
+											case 2:
+	
+												// Midpoint.
+													a = (top + (height * 0.5));
+	
+												// State.
+													state = (a > (elementTop - item.offset) && a < (elementBottom + item.offset));
+	
+												break;
+	
+										// Viewport midsection falls within element.
+											case 3:
+	
+												// Upper limit (25%-).
+													a = top + (height * 0.25);
+	
+													if (a - (height * 0.375) <= 0)
+														a = 0;
+	
+												// Lower limit (-75%).
+													b = top + (height * 0.75);
+	
+													if (b + (height * 0.375) >= document.body.scrollHeight - scrollPad)
+														b = document.body.scrollHeight + scrollPad;
+	
+												// State.
+													state = (b > (elementTop - item.offset) && a < (elementBottom + item.offset));
+	
+												break;
+	
+									}
+	
+								}
+	
+						// State changed?
+							if (state != item.state) {
+	
+								// Update state.
+									item.state = state;
+	
+								// Call handler.
+									if (item.state) {
+	
+										// Enter handler exists?
+											if (item.enter) {
+	
+												// Call it.
+													(item.enter).apply(item.element);
+	
+												// No leave handler? Unbind enter handler (so we don't check this element again).
+													if (!item.leave)
+														item.enter = null;
+	
+											}
+	
+									}
+									else {
+	
+										// Leave handler exists?
+											if (item.leave) {
+	
+												// Call it.
+													(item.leave).apply(item.element);
+	
+												// No enter handler? Unbind leave handler (so we don't check this element again).
+													if (!item.enter)
+														item.leave = null;
+	
+											}
+	
+									}
+	
+							}
+	
+					});
+	
+			},
+	
+			/**
+			 * Initializes scroll events.
+			 */
+			init: function() {
+	
+				// Bind handler to events.
+					on('load', this.handler);
+					on('resize', this.handler);
+					on('scroll', this.handler);
+	
+				// Do initial handler call.
+					(this.handler)();
+	
+			}
+		};
+	
+		// Initialize.
+			scrollEvents.init();
+	
+	// "On Visible" animation.
+		var onvisible = {
+	
+			/**
+			 * Effects.
+			 * @var {object}
+			 */
+			effects: {
+				'blur-in': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'filter ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.opacity = 0;
+						this.style.filter = 'blur(' + (0.25 * intensity) + 'rem)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.filter = 'none';
+					},
+				},
+				'zoom-in': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transform = 'scale(' + (1 - ((alt ? 0.25 : 0.05) * intensity)) + ')';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'zoom-out': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transform = 'scale(' + (1 + ((alt ? 0.25 : 0.05) * intensity)) + ')';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'slide-left': {
+					transition: function (speed, delay) {
+						return 'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function() {
+						this.style.transform = 'translateX(100vw)';
+					},
+					play: function() {
+						this.style.transform = 'none';
+					},
+				},
+				'slide-right': {
+					transition: function (speed, delay) {
+						return 'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function() {
+						this.style.transform = 'translateX(-100vw)';
+					},
+					play: function() {
+						this.style.transform = 'none';
+					},
+				},
+				'flip-forward': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transformOrigin = '50% 50%';
+						this.style.transform = 'perspective(1000px) rotateX(' + ((alt ? 45 : 15) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'flip-backward': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transformOrigin = '50% 50%';
+						this.style.transform = 'perspective(1000px) rotateX(' + ((alt ? -45 : -15) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'flip-left': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transformOrigin = '50% 50%';
+						this.style.transform = 'perspective(1000px) rotateY(' + ((alt ? 45 : 15) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'flip-right': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transformOrigin = '50% 50%';
+						this.style.transform = 'perspective(1000px) rotateY(' + ((alt ? -45 : -15) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'tilt-left': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transform = 'rotate(' + ((alt ? 45 : 5) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'tilt-right': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity, alt) {
+						this.style.opacity = 0;
+						this.style.transform = 'rotate(' + ((alt ? -45 : -5) * intensity) + 'deg)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'fade-right': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.opacity = 0;
+						this.style.transform = 'translateX(' + (-1.5 * intensity) + 'rem)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'fade-left': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.opacity = 0;
+						this.style.transform = 'translateX(' + (1.5 * intensity) + 'rem)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'fade-down': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.opacity = 0;
+						this.style.transform = 'translateY(' + (-1.5 * intensity) + 'rem)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'fade-up': {
+					transition: function (speed, delay) {
+						return	'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.opacity = 0;
+						this.style.transform = 'translateY(' + (1.5 * intensity) + 'rem)';
+					},
+					play: function() {
+						this.style.opacity = 1;
+						this.style.transform = 'none';
+					},
+				},
+				'fade-in': {
+					transition: function (speed, delay) {
+						return 'opacity ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function() {
+						this.style.opacity = 0;
+					},
+					play: function() {
+						this.style.opacity = 1;
+					},
+				},
+				'fade-in-background': {
+					custom: true,
+					transition: function (speed, delay) {
+	
+						this.style.setProperty('--onvisible-speed', speed + 's');
+	
+						if (delay)
+							this.style.setProperty('--onvisible-delay', delay + 's');
+	
+					},
+					rewind: function() {
+						this.style.removeProperty('--onvisible-background-color');
+					},
+					play: function() {
+						this.style.setProperty('--onvisible-background-color', 'rgba(0,0,0,0.001)');
+					},
+				},
+				'zoom-in-image': {
+					target: 'img',
+					transition: function (speed, delay) {
+						return 'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function() {
+						this.style.transform = 'scale(1)';
+					},
+					play: function(intensity) {
+						this.style.transform = 'scale(' + (1 + (0.1 * intensity)) + ')';
+					},
+				},
+				'zoom-out-image': {
+					target: 'img',
+					transition: function (speed, delay) {
+						return 'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.transform = 'scale(' + (1 + (0.1 * intensity)) + ')';
+					},
+					play: function() {
+						this.style.transform = 'none';
+					},
+				},
+				'focus-image': {
+					target: 'img',
+					transition: function (speed, delay) {
+						return	'transform ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '') + ', ' +
+								'filter ' + speed + 's ease' + (delay ? ' ' + delay + 's' : '');
+					},
+					rewind: function(intensity) {
+						this.style.transform = 'scale(' + (1 + (0.05 * intensity)) + ')';
+						this.style.filter = 'blur(' + (0.25 * intensity) + 'rem)';
+					},
+					play: function(intensity) {
+						this.style.transform = 'none';
+						this.style.filter = 'none';
+					},
+				},
+			},
+	
+			/**
+			 * Adds one or more animatable elements.
+			 * @param {string} selector Selector.
+			 * @param {object} settings Settings.
+			 */
+			add: function(selector, settings) {
+	
+				var style = settings.style in this.effects ? settings.style : 'fade',
+					speed = parseInt('speed' in settings ? settings.speed : 1000) / 1000,
+					intensity = ((parseInt('intensity' in settings ? settings.intensity : 5) / 10) * 1.75) + 0.25,
+					delay = parseInt('delay' in settings ? settings.delay : 0) / 1000,
+					offset = parseInt('offset' in settings ? settings.offset : 0),
+					mode = parseInt('mode' in settings ? settings.mode : 3),
+					replay = 'replay' in settings ? settings.replay : false,
+					stagger = 'stagger' in settings ? (parseInt(settings.stagger) / 1000) : false,
+					state = 'state' in settings ? settings.state : null,
+					effect = this.effects[style];
+	
+				// Step through selected elements.
+					$$(selector).forEach(function(e) {
+	
+						var	children = (stagger !== false) ? e.querySelectorAll(':scope > li, :scope ul > li') : null,
+							enter = function(staggerDelay=0) {
+	
+								var	_this = this,
+									transitionOrig;
+	
+								// Target provided? Use it instead of element.
+									if (effect.target)
+										_this = this.querySelector(effect.target);
+	
+								// Not a custom effect?
+									if (!effect.custom) {
+	
+										// Save original transition.
+											transitionOrig = _this.style.transition;
+	
+										// Apply temporary styles.
+											_this.style.setProperty('backface-visibility', 'hidden');
+	
+										// Apply transition.
+											_this.style.transition = effect.transition(speed, delay + staggerDelay);
+	
+									}
+	
+								// Otherwise, call custom transition handler.
+									else
+										effect.transition.apply(_this, [speed, delay + staggerDelay]);
+	
+								// Play.
+									effect.play.apply(_this, [intensity, !!children]);
+	
+								// Not a custom effect?
+									if (!effect.custom)
+										setTimeout(function() {
+	
+											// Remove temporary styles.
+												_this.style.removeProperty('backface-visibility');
+	
+											// Restore original transition.
+												_this.style.transition = transitionOrig;
+	
+										}, (speed + delay + staggerDelay) * 1000 * 2);
+	
+							},
+							leave = function() {
+	
+								var	_this = this,
+									transitionOrig;
+	
+								// Target provided? Use it instead of element.
+									if (effect.target)
+										_this = this.querySelector(effect.target);
+	
+								// Not a custom effect?
+									if (!effect.custom) {
+	
+										// Save original transition.
+											transitionOrig = _this.style.transition;
+	
+										// Apply temporary styles.
+											_this.style.setProperty('backface-visibility', 'hidden');
+	
+										// Apply transition.
+											_this.style.transition = effect.transition(speed);
+	
+									}
+	
+								// Otherwise, call custom transition handler.
+									else
+										effect.transition.apply(_this, [speed]);
+	
+								// Rewind.
+									effect.rewind.apply(_this, [intensity, !!children]);
+	
+								// Not a custom effect?
+									if (!effect.custom)
+										setTimeout(function() {
+	
+											// Remove temporary styles.
+												_this.style.removeProperty('backface-visibility');
+	
+											// Restore original transition.
+												_this.style.transition = transitionOrig;
+	
+										}, speed * 1000 * 2);
+	
+							},
+							targetElement, triggerElement;
+	
+						// Initial rewind.
+	
+							// Determine target element.
+								if (effect.target)
+									targetElement = e.querySelector(effect.target);
+								else
+									targetElement = e;
+	
+							// Children? Rewind each individually.
+								if (children)
+									children.forEach(function(targetElement) {
+										effect.rewind.apply(targetElement, [intensity, true]);
+									});
+	
+							// Otherwise. just rewind element.
+								else
+									effect.rewind.apply(targetElement, [intensity]);
+	
+						// Determine trigger element.
+							triggerElement = e;
+	
+							// Has a parent?
+								if (e.parentNode) {
+	
+									// Parent is an onvisible trigger? Use it.
+										if (e.parentNode.dataset.onvisibleTrigger)
+											triggerElement = e.parentNode;
+	
+									// Otherwise, has a grandparent?
+										else if (e.parentNode.parentNode) {
+	
+											// Grandparent is an onvisible trigger? Use it.
+												if (e.parentNode.parentNode.dataset.onvisibleTrigger)
+													triggerElement = e.parentNode.parentNode;
+	
+										}
+	
+								}
+	
+						// Add scroll event.
+							scrollEvents.add({
+								element: e,
+								triggerElement: triggerElement,
+								offset: offset,
+								mode: mode,
+								initialState: state,
+								enter: children ? function() {
+	
+									var staggerDelay = 0;
+	
+									// Step through children.
+										children.forEach(function(e) {
+	
+											// Apply enter handler.
+												enter.apply(e, [staggerDelay]);
+	
+											// Increment stagger delay.
+												staggerDelay += stagger;
+	
+										});
+	
+								} : enter,
+								leave: (replay ? (children ? function() {
+	
+									// Step through children.
+										children.forEach(function(e) {
+	
+											// Apply leave handler.
+												leave.apply(e);
+	
+										});
+	
+								} : leave) : null),
+							});
+	
+					});
+	
+				},
+	
+		};
+	
+	// "On Visible" animations.
+		onvisible.add('h1.style2, h2.style2, h3.style2, p.style2', { style: 'fade-down', speed: 1000, intensity: 5, delay: 0, replay: false });
+		onvisible.add('h1.style1, h2.style1, h3.style1, p.style1', { style: 'zoom-in', speed: 1250, intensity: 10, delay: 0, replay: false });
+		onvisible.add('h1.style3, h2.style3, h3.style3, p.style3', { style: 'fade-in', speed: 1000, intensity: 5, delay: 0, replay: false });
+		onvisible.add('.buttons.style1', { style: 'fade-up', speed: 1000, intensity: 5, delay: 0, replay: false });
+		onvisible.add('h1.style4, h2.style4, h3.style4, p.style4', { style: 'zoom-in', speed: 1250, intensity: 10, delay: 0, replay: false });
+		onvisible.add('.buttons.style2', { style: 'fade-up', speed: 1000, intensity: 5, delay: 0, replay: false });
+		onvisible.add('h1.style5, h2.style5, h3.style5, p.style5', { style: 'fade-in', speed: 1000, intensity: 5, delay: 0, replay: false });
 
 })();

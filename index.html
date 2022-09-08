@@ -1,85 +1,155 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-		<title>Web Lense API</title>
+		<title>WebLense</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
-		<meta name="description" content="An api designed to capture screenshots of website." />
-		<meta property="og:site_name" content="Web Lense API" />
-		<meta property="og:title" content="Web Lense API" />
+		<meta name="description" content="Capture screenshots of websites on the fly. Configure sizing, versions, and more." />
+		<meta property="og:site_name" content="WebLense" />
+		<meta property="og:title" content="WebLense" />
 		<meta property="og:type" content="website" />
-		<meta property="og:description" content="An api designed to capture screenshots of website." />
-		<link href="https://fonts.googleapis.com/css?display=swap&family=Lato:700,700italic,400,400italic,900,900italic" rel="stylesheet" type="text/css" />
-		<link rel="icon" type="image/png" href="/images/favicon.png" />
-		<link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
-		<link rel="stylesheet" href="/main.css" />
-		<noscript><link rel="stylesheet" href="/noscript.css" /></noscript>
+		<meta property="og:description" content="Capture screenshots of websites on the fly. Configure sizing, versions, and more." />
+		<link href="https://fonts.googleapis.com/css?display=swap&family=Sora:600,600italic,700,700italic,300,300italic,800,800italic,800,800italic,400,400italic" rel="stylesheet" type="text/css" />
+		<link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+		<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
+		<link rel="stylesheet" href="/assets/main.css" />
+		<noscript><link rel="stylesheet" href="/assets/noscript.css" /></noscript>
 	</head>
 	<body class="is-loading">
 		<div id="wrapper">
 			<div id="main">
 				<div class="inner">
-					<h1 id="text02">WebLense API</h1>
-					<p id="text01">Capture screenshots of websites. That&#039;s it.</p>
-					<p id="text03"><strong>Endpoint:</strong> /lense/<code>HEIGHT</code>x<code>WIDTH</code>/</p>
-					<div id="table01" class="table-wrapper">
-						<div class="table-inner">
-							<table>
-								<thead>
-									<tr>
-										<th>Query</th>
-										<th>Description</th>
-										<th>Optional</th>
-										<th>Default</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>url</td>
-										<td><strong>String</strong> The url you want to capture.</td>
-										<td>❌</td>
-										<td>NONE</td>
-									</tr>
-									<tr>
-										<td>full</td>
-										<td><strong>Boolean</strong> Capture full page.</td>
-										<td>✅</td>
-										<td>False</td>
-									</tr>
-									<tr>
-										<td>type</td>
-										<td><strong>String</strong> Image type, <code>jpeg</code> or <code>png</code></td>
-										<td>✅</td>
-										<td>png</td>
-									</tr>
-								</tbody>
-							</table>
+					<div id="container04" class="style1 container default full">
+						<div class="wrapper">
+							<div class="inner" data-onvisible-trigger="1">
+								<h3 id="text01" class="style2"><mark>Website</mark> Captures</h3>
+								<h1 id="text06" class="style1">Weblense</h1>
+								<p id="text08" class="style3">Capture screenshots of websites on the fly. Configure sizing, versions, and more.</p>
+								<ul id="buttons03" class="style1 buttons">
+									<li>
+										<a href="#one" class="button n01"><svg><use xlink:href="/assets/icons.svg#arrow-down"></use></svg><span class="label">Get Started</span></a>
+									</li>
+								</ul>
+							</div>
 						</div>
 					</div>
-					<hr id="divider01">
-					<form id="demo" onsubmit="event.preventDefault(); grabScreen();">
-						<div class="inner">
-							<div class="field">
-								<input type="text" name="url" id="demo-url" placeholder="Url" maxlength="256" required />
-							</div>
-							<div class="actions">
-								<button type="submit">Grab Screenshot!</button>
+					<div id="container07" data-scroll-id="one" data-scroll-behavior="default" data-scroll-offset="0" data-scroll-invisible="1" class="container columns full screen">
+						<div class="wrapper">
+							<div class="inner" data-onvisible-trigger="1" data-reorder="1,0" data-reorder-breakpoint="medium">
+								<div>
+									<h3 id="text30" class="style2">Getting Started</h3>
+									<h2 id="text31" class="style4">Too Easy</h2>
+									<p id="text32" class="style3">To get started with WebLense it&#039;s just too easy. Add your <code>&lt;img&gt;</code> tag and set the source.</p>
+									<ul id="buttons02" class="style2 buttons">
+										<li>
+											<a href="#two" class="button n01"><svg><use xlink:href="/assets/icons.svg#arrow-down"></use></svg><span class="label">Get More Advanced</span></a>
+										</li>
+									</ul>
+								</div>
+								<div>
+									<div id="embed01">
+										<script src="https://gist.github.com/clarkhacks/53d8a2fa35ff843711bd917b8a47794e.js"></script>
+									</div>
+								</div>
 							</div>
 						</div>
-					</form>
-					<div id="image" class="image">
-						<span class="frame"><img id="demo-image" src="/images/image.jpg" alt="" /></span>
+					</div>
+					<div id="container06" data-scroll-id="two" data-scroll-behavior="default" data-scroll-offset="0" data-scroll-invisible="1" class="container columns full screen">
+						<div class="wrapper">
+							<div class="inner" data-onvisible-trigger="1" data-reorder="0,1" data-reorder-breakpoint="medium">
+								<div>
+									<div id="table01" class="table-wrapper">
+										<div class="table-inner">
+											<table>
+												<thead>
+													<tr>
+														<th>Query</th>
+														<th>Description</th>
+														<th>Required</th>
+														<th>Default</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>url</td>
+														<td><strong>String</strong> URL to capture</td>
+														<td>✅</td>
+														<td><code>NONE</code></td>
+													</tr>
+													<tr>
+														<td>full</td>
+														<td><strong>Boolean</strong> Capture full page</td>
+														<td>❌</td>
+														<td><code>false</code></td>
+													</tr>
+													<tr>
+														<td>type</td>
+														<td><strong>String</strong> Image type, <code>jpeg</code> or <code>png</code></td>
+														<td>❌</td>
+														<td><code>png</code></td>
+													</tr>
+													<tr>
+														<td>lastest</td>
+														<td><strong>Boolean</strong> Skip cached files</td>
+														<td>❌</td>
+														<td><code>false</code></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+								<div>
+									<h3 id="text25" class="style2">More Advanced</h3>
+									<h2 id="text26" class="style4">Advanced</h2>
+									<p id="text09" class="style3">WebLense offers some basic configuration queries. Options to set the file type, skipping cached files, and full page capture.</p>
+									<ul id="buttons05" class="style2 buttons">
+										<li>
+											<a href="#three" class="button n01"><svg><use xlink:href="/assets/icons.svg#arrow-down"></use></svg><span class="label">Even More</span></a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="container10" data-scroll-id="three" data-scroll-behavior="default" data-scroll-offset="0" data-scroll-invisible="1" class="container columns full screen">
+						<div class="wrapper">
+							<div class="inner" data-onvisible-trigger="1" data-reorder="1,0" data-reorder-breakpoint="medium">
+								<div>
+									<h3 id="text11" class="style2">WebLense JS</h3>
+									<h2 id="text22" class="style4">With Javascript</h2>
+									<p id="text05" class="style3">WebLense also offers a javascript package for ease of use.</p>
+									<ul id="buttons04" class="style2 buttons">
+										<li>
+											<a href="#docs" class="button n01"><svg><use xlink:href="/assets/icons.svg#arrow-down"></use></svg><span class="label">Full Docs</span></a>
+										</li>
+									</ul>
+								</div>
+								<div>
+									<div id="embed02">
+										<script src="https://gist.github.com/clarkhacks/334b1f5e189d860bd453f27e49c4779e.js"></script>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="container08" data-scroll-id="docs" data-scroll-behavior="default" data-scroll-offset="0" data-scroll-invisible="1" class="style1 container default full">
+						<div class="wrapper">
+							<div class="inner" data-onvisible-trigger="1">
+								<h3 id="text04" class="style2"><mark>WebLense</mark> Documentation</h3>
+								<h2 id="text14" class="style1">WebLense</h2>
+								<ul id="buttons01" class="style2 buttons">
+									<li>
+										<a href="https://docs.weblense.co/" class="button n01"><svg><use xlink:href="/assets/icons.svg#document"></use></svg><span class="label">Read The Full Docs</span></a>
+									</li>
+								</ul>
+								<p id="text16" class="style5">© Clark Weckmann. All rights reserved.</p>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<script src="/main.js"></script>
-		<script>
-			function grabScreen() {
-				var url = document.getElementById("demo-url").value;
-				var image = document.getElementById("demo-image");
-				image.src = "https://weblense.co/s/?url=" + url;
-			}
-		</script>
+		<script src="/assets/main.js"></script>
 	</body>
 </html>

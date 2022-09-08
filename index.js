@@ -16,8 +16,7 @@ const photoDir = "/mnt/volume_nyc3_01/weblense/";
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
-app.use(express.static("./assets")); // Serve static files from the assets directory
-
+app.use(express.static("./assets/")); // Serve static files from the public directory
 app.use(cors()); // Enable CORS for all requests
 // landing page
 app.get("/", function (req, res) {
